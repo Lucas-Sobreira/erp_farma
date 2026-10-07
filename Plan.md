@@ -53,8 +53,9 @@ Legenda: [x] feito e verificado · [~] feito, falta verificar · [ ] pendente
 - [x] **3. Bronze** — `src/pipeline/bronze/ingestao.py`
 - [x] **4. Silver** — `src/pipeline/silver/tabelas.py`
 - [x] **5. Gold** — `dimensoes.sql`, `fatos.sql`, `agregados.sql`
-- [~] **6. Dashboard "Análise Comercial"** — 15 widgets em `analise_comercial.lvdash.json`
+- [x] **6. Dashboard "Análise Comercial"** — 15 widgets em `analise_comercial.lvdash.json`
 - [x] **7. Genie space** — instruções, relacionamentos, perguntas e SQL de referência em `genie/` (space criado pela API a partir de `genie/space.json`)
+- [x] **9. Página web do assistente** — `web/index.html` + `web/servidor.py` (ponte para a Genie Conversation API), testada no navegador
 - [x] **8. Fechamento** — `CLAUDE.md` e `Readme.md` atualizados
 
 ## Verificação
@@ -64,7 +65,7 @@ Legenda: [x] feito e verificado · [~] feito, falta verificar · [ ] pendente
 - [x] `databricks bundle run farma_workflow` em `backfill` conclui as 3 tarefas
 - [x] Conferências SQL (`tests/conferencia.sql`): contagem por camada, faturamento Gold = soma dos itens na Silver, nenhuma FK órfã
 - [ ] Execução `diario` processa só o incremento, sem duplicar
-- [ ] Dashboard abre com todos os visuais e filtros funcionando
+- [x] Dashboard abre com todos os visuais e filtros funcionando (conferido pelo usuário)
 - [x] Genie responde corretamente a 5 perguntas de exemplo
 
 ## Desvios em relação ao plano aprovado
@@ -93,3 +94,4 @@ Legenda: [x] feito e verificado · [~] feito, falta verificar · [ ] pendente
 - 2026-10-07 — `CLAUDE.md` criado; plano aprovado; ambiente local verificado.
 - 2026-10-07 — Gerador implementado e testado; bundle, pipeline (Bronze/Silver/Gold), dashboard e configuração do Genie escritos, aguardando Databricks CLI e autenticação para o primeiro deploy.
 - 2026-10-07 — Catálogo trocado para `erp_farma` (schemas sem o prefixo `farma_`). Deploy e backfill de 3 anos concluídos (gerador 72s, pipeline 222s). Conferências SQL OK. Genie space criado e testado com 7 perguntas; duas respostas fracas corrigidas com novas regras nas instruções (clientes não identificados e definição de crescimento). Pendente: conferir o dashboard visualmente e testar a carga `diario`.
+- 2026-10-07 — Dashboard aprovado pelo usuário. Teste da carga `diario` adiado a pedido. Criada a página web do assistente, ligada ao Genie por um servidor local; pergunta de ponta a ponta validada no navegador. Projeto publicado em github.com/Lucas-Sobreira/erp_farma.

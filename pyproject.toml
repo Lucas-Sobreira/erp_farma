@@ -7,6 +7,7 @@ dependencies = []
 
 [dependency-groups]
 dev = ["pytest>=8", "ruff>=0.6"]
+web = ["databricks-sdk>=0.40"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

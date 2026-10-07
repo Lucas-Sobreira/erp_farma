@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "assistente-web",
+      "runtimeExecutable": "uv",
+      "runtimeArgs": ["run", "--group", "web", "python", "web/servidor.py"],
+      "port": 8000
+    }
+  ]
+}

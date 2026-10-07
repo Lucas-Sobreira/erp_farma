@@ -67,7 +67,7 @@ def consultas() -> list[dict]:
 
 def perguntas_sugeridas() -> list[dict]:
     markdown = (PASTA / "perguntas_exemplo.md").read_text(encoding="utf-8")
-    return [{"id": _id("pergunta", p), "question": [p]} for p in re.findall(r"★ (.+)", markdown)]
+    return [{"id": _id("pergunta", p), "question": [p]} for p in re.findall(r"^(?:\d+\.|-) ★ (.+)", markdown, re.M)]
 
 
 def por_id(itens: list[dict]) -> list[dict]:
