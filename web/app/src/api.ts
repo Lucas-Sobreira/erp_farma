@@ -54,3 +54,29 @@ export function consultarResposta(ids: Identificadores, sinal?: AbortSignal) {
   const parametros = new URLSearchParams({ conversa_id: ids.conversa_id, mensagem_id: ids.mensagem_id });
   return chamar<Resposta | EmAndamento>(`/api/resposta?${parametros}`, { signal: sinal });
 }
+
+export interface Indicador {
+  id: string;
+  rotulo: string;
+  valor: number | null;
+  formato: "moeda" | "inteiro" | "percentual";
+  variacao: number | null;
+  unidade_variacao: "%" | "pp";
+  detalhe: string | null;
+}
+
+export interface Indicadores {
+  versao: string;
+  dados_ate: string;
+  dias: number;
+  calculado_em: string;
+  indicadores: Indicador[];
+}
+
+/** Informa a versão que o navegador já tem; o servidor só devolve os números se houver carga nova. */
+export function buscarIndicadores(versaoAtual: string | null, sinal?: AbortSignal) {
+  const consulta = versaoAtual ? `?${new URLSearchParams({ versao: versaoAtual })}` : "";
+  return chamar<(Indicadores & { atualizado: true }) | { versao: string; atualizado: false }>(`/api/indicadores${consulta}`, {
+    signal: sinal,
+  });
+}

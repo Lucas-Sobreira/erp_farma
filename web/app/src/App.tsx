@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef } from "react";
 import { BoasVindas } from "./components/BoasVindas";
 import { Compositor } from "./components/Compositor";
+import { FaixaIndicadores } from "./components/FaixaIndicadores";
 import { IconeCruz, IconeLua, IconeMais, IconeSol } from "./components/Icones";
 import { Turno } from "./components/Turno";
 import { useConversa } from "./hooks/useConversa";
@@ -60,6 +61,7 @@ export function App() {
       </header>
 
       <main className="conteudo">
+        <FaixaIndicadores />
         {turnos.length === 0 ? (
           <BoasVindas sugestoes={sugestoes} carregando={carregando} aoPerguntar={perguntar} />
         ) : (

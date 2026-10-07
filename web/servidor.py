@@ -30,6 +30,7 @@ from urllib.parse import parse_qs, unquote, urlparse
 
 from databricks.sdk import WorkspaceClient
 from databricks.sdk.errors import DatabricksError
+from indicadores import Indicadores
 
 PASTA = Path(__file__).parent
 DIST = (PASTA / "dist").resolve()
@@ -44,6 +45,7 @@ ESTADOS_FINAIS = {"COMPLETED", "FAILED", "CANCELLED", "QUERY_RESULT_EXPIRED"}
 
 databricks = WorkspaceClient(profile=PERFIL)
 BASE = f"/api/2.0/genie/spaces/{SPACE_ID}"
+indicadores = Indicadores(databricks)
 
 
 class RequisicaoInvalida(Exception):
@@ -116,6 +118,9 @@ class Manipulador(BaseHTTPRequestHandler):
         url = urlparse(self.path)
         if url.path == "/api/sugestoes":
             self._json(lambda: {"perguntas": perguntas_sugeridas()})
+        elif url.path == "/api/indicadores":
+            versao = parse_qs(url.query).get("versao", [None])[0]
+            self._json(lambda: indicadores.obter(versao))
         elif url.path == "/api/resposta":
             q = parse_qs(url.query)
             self._json(lambda: resposta(q.get("conversa_id", [""])[0], q.get("mensagem_id", [""])[0]))

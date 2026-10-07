@@ -75,6 +75,8 @@ uv run --group web python web/servidor.py
 
 O servidor só aceita conexões da própria máquina, porque a página mostra dados comerciais sem login.
 
+No topo da página há uma faixa de indicadores (faturamento, vendas, ticket médio, margem bruta e estoque em risco) dos últimos 30 dias com vendas, comparados aos 30 dias anteriores. Eles são recalculados só quando o pipeline conclui uma nova carga; sem carga nova, a página reaproveita os números que já tem e o SQL warehouse não é acionado.
+
 ## Desenvolvimento local
 
 ```bash

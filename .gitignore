@@ -13,3 +13,6 @@ _landing/
 
 # Build da página web
 web/dist/
+
+# Cache local dos indicadores da página
+web/.cache_indicadores.json
