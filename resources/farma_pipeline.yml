@@ -1,0 +1,16 @@
+resources:
+  pipelines:
+    medalhao:
+      name: farma_medalhao
+      serverless: true
+      catalog: ${var.catalogo}
+      # Schema padrão: as tabelas Gold são declaradas sem qualificador.
+      schema: ${resources.schemas.gold.name}
+      root_path: ../src/pipeline
+      libraries:
+        - glob:
+            include: ../src/pipeline/**
+      configuration:
+        farma.landing: /Volumes/${var.catalogo}/${resources.schemas.landing.name}/${resources.volumes.erp.name}
+        farma.schema_bronze: ${resources.schemas.bronze.name}
+        farma.schema_silver: ${resources.schemas.silver.name}

@@ -1,0 +1,52 @@
+resources:
+  jobs:
+    farma_workflow:
+      name: farma_workflow
+      description: ERP -> Landing -> Bronze -> Silver -> Gold -> Dashboard.
+
+      parameters:
+        - name: modo
+          default: diario # backfill = carga inicial com histórico
+        - name: data_referencia
+          default: "" # AAAA-MM-DD; vazio = hoje (horário de Brasília)
+        - name: anos_historico
+          default: "3" # usado apenas no modo backfill
+
+      # Criado pausado para não consumir a cota da Free Edition sem querer.
+      schedule:
+        quartz_cron_expression: 0 0 6 * * ?
+        timezone_id: America/Sao_Paulo
+        pause_status: PAUSED
+
+      tasks:
+        - task_key: gerar_landing
+          environment_key: padrao
+          spark_python_task:
+            python_file: ../src/gerador/main.py
+            parameters:
+              - --modo
+              - "{{job.parameters.modo}}"
+              - --destino
+              - /Volumes/${var.catalogo}/${resources.schemas.landing.name}/${resources.volumes.erp.name}
+              - --data-referencia
+              - "{{job.parameters.data_referencia}}"
+              - --anos-historico
+              - "{{job.parameters.anos_historico}}"
+
+        - task_key: pipeline_medalhao
+          depends_on:
+            - task_key: gerar_landing
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.medalhao.id}
+
+        - task_key: atualizar_dashboard
+          depends_on:
+            - task_key: pipeline_medalhao
+          dashboard_task:
+            dashboard_id: ${resources.dashboards.analise_comercial.id}
+            warehouse_id: ${var.warehouse_id}
+
+      environments:
+        - environment_key: padrao
+          spec:
+            environment_version: "2"

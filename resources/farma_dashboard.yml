@@ -1,0 +1,9 @@
+resources:
+  dashboards:
+    analise_comercial:
+      display_name: Farma - Análise Comercial
+      file_path: ../src/dashboards/analise_comercial.lvdash.json
+      warehouse_id: ${var.warehouse_id}
+      # As consultas do dashboard usam nomes de tabela sem qualificador.
+      dataset_catalog: ${var.catalogo}
+      dataset_schema: ${resources.schemas.gold.name}

@@ -1,0 +1,26 @@
+resources:
+  schemas:
+    landing:
+      catalog_name: ${var.catalogo}
+      name: landing
+      comment: Arquivos extraídos do ERP da farmácia, como chegaram (Volume erp).
+    bronze:
+      catalog_name: ${var.catalogo}
+      name: bronze
+      comment: Dados brutos do ERP da farmácia em Delta, sem regra de negócio.
+    silver:
+      catalog_name: ${var.catalogo}
+      name: silver
+      comment: Dados do ERP da farmácia tipados, validados e sem duplicatas.
+    gold:
+      catalog_name: ${var.catalogo}
+      name: gold
+      comment: Modelo estrela e agregados de vendas, pagamentos e estoque da farmácia.
+
+  volumes:
+    erp:
+      catalog_name: ${var.catalogo}
+      schema_name: ${resources.schemas.landing.name}
+      name: erp
+      volume_type: MANAGED
+      comment: Landing dos arquivos do ERP, em <entidade>/dt=AAAA-MM-DD/.

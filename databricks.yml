@@ -1,0 +1,29 @@
+bundle:
+  name: erp_farma
+
+include:
+  - resources/*.yml
+
+variables:
+  catalogo:
+    description: Catálogo do Unity Catalog onde ficam os schemas do projeto.
+    default: erp_farma
+  warehouse_id:
+    description: SQL warehouse usado pelo dashboard (na Free Edition só existe um).
+    lookup:
+      warehouse: Serverless Starter Warehouse
+
+targets:
+  # A autenticação vem do perfil do Databricks CLI cujo host é este (`databricks auth login`).
+  dev:
+    default: true
+    workspace:
+      host: https://dbc-db73e37b-da6f.cloud.databricks.com
+
+# Só o código e as definições vão para o workspace.
+sync:
+  exclude:
+    - .claude/**
+    - images/**
+    - tests/**
+    - "*.md"

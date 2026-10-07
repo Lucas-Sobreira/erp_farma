@@ -1,0 +1,1246 @@
+{
+  "datasets": [
+    {
+      "name": "vendas",
+      "displayName": "Vendas diárias",
+      "queryLines": [
+        "SELECT data_venda, nome_filial, canal, categoria, tipo_produto, quantidade_itens, faturamento, valor_desconto, custo_total, margem_bruta\n",
+        "FROM agg_vendas_diarias\n"
+      ]
+    },
+    {
+      "name": "pagamentos",
+      "displayName": "Pagamentos diários",
+      "queryLines": [
+        "SELECT data_venda, nome_filial, canal, forma_pagamento, quantidade_pagamentos, valor_pago\n",
+        "FROM agg_pagamentos_diarios\n"
+      ]
+    },
+    {
+      "name": "cupons",
+      "displayName": "Cupons diários",
+      "queryLines": [
+        "SELECT data_venda, nome_filial, canal, quantidade_vendas, quantidade_clientes_identificados, faturamento\n",
+        "FROM agg_vendas_cupons_diarios\n"
+      ]
+    },
+    {
+      "name": "produtos",
+      "displayName": "Vendas por produto",
+      "queryLines": [
+        "SELECT v.data_venda, f.nome_filial, v.canal, p.nome_produto, p.laboratorio, p.categoria,\n",
+        "  SUM(v.quantidade) AS quantidade, SUM(v.faturamento) AS faturamento, SUM(v.margem_bruta) AS margem_bruta\n",
+        "FROM fato_vendas AS v\n",
+        "JOIN dim_filial AS f ON f.id_filial = v.id_filial\n",
+        "JOIN dim_produto AS p ON p.id_produto = v.id_produto\n",
+        "GROUP BY ALL\n"
+      ]
+    },
+    {
+      "name": "estoque",
+      "displayName": "Estoque atual",
+      "queryLines": [
+        "SELECT f.nome_filial, e.situacao_validade, e.quantidade_disponivel, e.valor_estoque\n",
+        "FROM fato_estoque AS e\n",
+        "JOIN dim_filial AS f ON f.id_filial = e.id_filial\n",
+        "WHERE e.posicao_atual\n"
+      ]
+    },
+    {
+      "name": "lotes_criticos",
+      "displayName": "Lotes vencidos ou a vencer",
+      "queryLines": [
+        "SELECT f.nome_filial, p.nome_produto, e.lote, e.data_validade, e.dias_para_vencer, e.quantidade_disponivel, e.valor_estoque\n",
+        "FROM fato_estoque AS e\n",
+        "JOIN dim_filial AS f ON f.id_filial = e.id_filial\n",
+        "JOIN dim_produto AS p ON p.id_produto = e.id_produto\n",
+        "WHERE e.posicao_atual AND e.dias_para_vencer <= 60 AND e.quantidade_disponivel > 0\n",
+        "ORDER BY e.dias_para_vencer\n"
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "name": "analise_comercial",
+      "displayName": "Análise Comercial",
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layout": [
+        {
+          "widget": {
+            "name": "filtro_periodo",
+            "queries": [
+              {
+                "name": "filtro_periodo_vendas",
+                "query": {
+                  "datasetName": "vendas",
+                  "fields": [
+                    {
+                      "name": "data_venda",
+                      "expression": "`data_venda`"
+                    },
+                    {
+                      "name": "data_venda_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "filtro_periodo_pagamentos",
+                "query": {
+                  "datasetName": "pagamentos",
+                  "fields": [
+                    {
+                      "name": "data_venda",
+                      "expression": "`data_venda`"
+                    },
+                    {
+                      "name": "data_venda_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "filtro_periodo_cupons",
+                "query": {
+                  "datasetName": "cupons",
+                  "fields": [
+                    {
+                      "name": "data_venda",
+                      "expression": "`data_venda`"
+                    },
+                    {
+                      "name": "data_venda_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "filtro_periodo_produtos",
+                "query": {
+                  "datasetName": "produtos",
+                  "fields": [
+                    {
+                      "name": "data_venda",
+                      "expression": "`data_venda`"
+                    },
+                    {
+                      "name": "data_venda_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "filter-date-range-picker",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "data_venda",
+                    "displayName": "Período",
+                    "queryName": "filtro_periodo_vendas"
+                  },
+                  {
+                    "fieldName": "data_venda",
+                    "displayName": "Período",
+                    "queryName": "filtro_periodo_pagamentos"
+                  },
+                  {
+                    "fieldName": "data_venda",
+                    "displayName": "Período",
+                    "queryName": "filtro_periodo_cupons"
+                  },
+                  {
+                    "fieldName": "data_venda",
+                    "displayName": "Período",
+                    "queryName": "filtro_periodo_produtos"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Período"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 2,
+            "height": 1
+          }
+        },
+        {
+          "widget": {
+            "name": "filtro_canal",
+            "queries": [
+              {
+                "name": "filtro_canal_vendas",
+                "query": {
+                  "datasetName": "vendas",
+                  "fields": [
+                    {
+                      "name": "canal",
+                      "expression": "`canal`"
+                    },
+                    {
+                      "name": "canal_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "filtro_canal_pagamentos",
+                "query": {
+                  "datasetName": "pagamentos",
+                  "fields": [
+                    {
+                      "name": "canal",
+                      "expression": "`canal`"
+                    },
+                    {
+                      "name": "canal_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "filtro_canal_cupons",
+                "query": {
+                  "datasetName": "cupons",
+                  "fields": [
+                    {
+                      "name": "canal",
+                      "expression": "`canal`"
+                    },
+                    {
+                      "name": "canal_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "filtro_canal_produtos",
+                "query": {
+                  "datasetName": "produtos",
+                  "fields": [
+                    {
+                      "name": "canal",
+                      "expression": "`canal`"
+                    },
+                    {
+                      "name": "canal_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "filter-multi-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "canal",
+                    "displayName": "Canal de Vendas",
+                    "queryName": "filtro_canal_vendas"
+                  },
+                  {
+                    "fieldName": "canal",
+                    "displayName": "Canal de Vendas",
+                    "queryName": "filtro_canal_pagamentos"
+                  },
+                  {
+                    "fieldName": "canal",
+                    "displayName": "Canal de Vendas",
+                    "queryName": "filtro_canal_cupons"
+                  },
+                  {
+                    "fieldName": "canal",
+                    "displayName": "Canal de Vendas",
+                    "queryName": "filtro_canal_produtos"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Canal de Vendas"
+              }
+            }
+          },
+          "position": {
+            "x": 2,
+            "y": 0,
+            "width": 2,
+            "height": 1
+          }
+        },
+        {
+          "widget": {
+            "name": "filtro_filial",
+            "queries": [
+              {
+                "name": "filtro_filial_vendas",
+                "query": {
+                  "datasetName": "vendas",
+                  "fields": [
+                    {
+                      "name": "nome_filial",
+                      "expression": "`nome_filial`"
+                    },
+                    {
+                      "name": "nome_filial_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "filtro_filial_pagamentos",
+                "query": {
+                  "datasetName": "pagamentos",
+                  "fields": [
+                    {
+                      "name": "nome_filial",
+                      "expression": "`nome_filial`"
+                    },
+                    {
+                      "name": "nome_filial_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "filtro_filial_cupons",
+                "query": {
+                  "datasetName": "cupons",
+                  "fields": [
+                    {
+                      "name": "nome_filial",
+                      "expression": "`nome_filial`"
+                    },
+                    {
+                      "name": "nome_filial_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "filtro_filial_produtos",
+                "query": {
+                  "datasetName": "produtos",
+                  "fields": [
+                    {
+                      "name": "nome_filial",
+                      "expression": "`nome_filial`"
+                    },
+                    {
+                      "name": "nome_filial_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "filtro_filial_estoque",
+                "query": {
+                  "datasetName": "estoque",
+                  "fields": [
+                    {
+                      "name": "nome_filial",
+                      "expression": "`nome_filial`"
+                    },
+                    {
+                      "name": "nome_filial_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "filtro_filial_lotes_criticos",
+                "query": {
+                  "datasetName": "lotes_criticos",
+                  "fields": [
+                    {
+                      "name": "nome_filial",
+                      "expression": "`nome_filial`"
+                    },
+                    {
+                      "name": "nome_filial_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "filter-multi-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "nome_filial",
+                    "displayName": "Filial",
+                    "queryName": "filtro_filial_vendas"
+                  },
+                  {
+                    "fieldName": "nome_filial",
+                    "displayName": "Filial",
+                    "queryName": "filtro_filial_pagamentos"
+                  },
+                  {
+                    "fieldName": "nome_filial",
+                    "displayName": "Filial",
+                    "queryName": "filtro_filial_cupons"
+                  },
+                  {
+                    "fieldName": "nome_filial",
+                    "displayName": "Filial",
+                    "queryName": "filtro_filial_produtos"
+                  },
+                  {
+                    "fieldName": "nome_filial",
+                    "displayName": "Filial",
+                    "queryName": "filtro_filial_estoque"
+                  },
+                  {
+                    "fieldName": "nome_filial",
+                    "displayName": "Filial",
+                    "queryName": "filtro_filial_lotes_criticos"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Filial"
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 0,
+            "width": 2,
+            "height": 1
+          }
+        },
+        {
+          "widget": {
+            "name": "faturamento_total",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "vendas",
+                  "fields": [
+                    {
+                      "name": "valor",
+                      "expression": "SUM(`faturamento`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "valor",
+                  "displayName": "Faturamento Total",
+                  "format": {
+                    "type": "number-currency",
+                    "currencyCode": "BRL",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 2
+                    }
+                  }
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Faturamento Total"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 1,
+            "width": 2,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "unidades_vendidas",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "vendas",
+                  "fields": [
+                    {
+                      "name": "valor",
+                      "expression": "SUM(`quantidade_itens`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "valor",
+                  "displayName": "Produtos Vendidos",
+                  "format": {
+                    "type": "number-plain",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 1
+                    }
+                  }
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Produtos Vendidos"
+              }
+            }
+          },
+          "position": {
+            "x": 2,
+            "y": 1,
+            "width": 2,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "ticket_medio",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "cupons",
+                  "fields": [
+                    {
+                      "name": "valor",
+                      "expression": "SUM(`faturamento`) / SUM(`quantidade_vendas`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "valor",
+                  "displayName": "Ticket Médio",
+                  "format": {
+                    "type": "number-currency",
+                    "currencyCode": "BRL",
+                    "decimalPlaces": {
+                      "type": "exact",
+                      "places": 2
+                    }
+                  }
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Ticket Médio"
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 1,
+            "width": 2,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "evolucao_faturamento",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "vendas",
+                  "fields": [
+                    {
+                      "name": "monthly(data_venda)",
+                      "expression": "DATE_TRUNC(\"MONTH\", `data_venda`)"
+                    },
+                    {
+                      "name": "sum(faturamento)",
+                      "expression": "SUM(`faturamento`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "monthly(data_venda)",
+                  "scale": {
+                    "type": "temporal"
+                  },
+                  "displayName": "Mês"
+                },
+                "y": {
+                  "fieldName": "sum(faturamento)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "Faturamento",
+                  "format": {
+                    "type": "number-currency",
+                    "currencyCode": "BRL",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 2
+                    }
+                  }
+                },
+                "label": {
+                  "show": true
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Evolução de Faturamento"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 3,
+            "width": 4,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "formas_pagamento",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "pagamentos",
+                  "fields": [
+                    {
+                      "name": "forma_pagamento",
+                      "expression": "`forma_pagamento`"
+                    },
+                    {
+                      "name": "sum(valor_pago)",
+                      "expression": "SUM(`valor_pago`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "pie",
+              "encodings": {
+                "angle": {
+                  "fieldName": "sum(valor_pago)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "Valor pago",
+                  "format": {
+                    "type": "number-currency",
+                    "currencyCode": "BRL",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 2
+                    }
+                  }
+                },
+                "color": {
+                  "fieldName": "forma_pagamento",
+                  "scale": {
+                    "type": "categorical"
+                  },
+                  "displayName": "Forma de pagamento"
+                },
+                "label": {
+                  "show": true
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Formas de Pagamento"
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 3,
+            "width": 2,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "vendas_categoria",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "vendas",
+                  "fields": [
+                    {
+                      "name": "categoria",
+                      "expression": "`categoria`"
+                    },
+                    {
+                      "name": "sum(faturamento)",
+                      "expression": "SUM(`faturamento`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "sum(faturamento)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "Faturamento",
+                  "format": {
+                    "type": "number-currency",
+                    "currencyCode": "BRL",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 2
+                    }
+                  }
+                },
+                "y": {
+                  "fieldName": "categoria",
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "x-reversed"
+                    }
+                  },
+                  "displayName": "Categoria"
+                },
+                "label": {
+                  "show": true
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Vendas por Categoria"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 9,
+            "width": 3,
+            "height": 8
+          }
+        },
+        {
+          "widget": {
+            "name": "quantidade_vendida",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "vendas",
+                  "fields": [
+                    {
+                      "name": "monthly(data_venda)",
+                      "expression": "DATE_TRUNC(\"MONTH\", `data_venda`)"
+                    },
+                    {
+                      "name": "sum(quantidade_itens)",
+                      "expression": "SUM(`quantidade_itens`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "area",
+              "encodings": {
+                "x": {
+                  "fieldName": "monthly(data_venda)",
+                  "scale": {
+                    "type": "temporal"
+                  },
+                  "displayName": "Mês"
+                },
+                "y": {
+                  "fieldName": "sum(quantidade_itens)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "Unidades",
+                  "format": {
+                    "type": "number-plain",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 1
+                    }
+                  }
+                },
+                "label": {
+                  "show": true
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Quantidade de Produtos Vendidos"
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 9,
+            "width": 3,
+            "height": 8
+          }
+        },
+        {
+          "widget": {
+            "name": "faturamento_canal",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "vendas",
+                  "fields": [
+                    {
+                      "name": "monthly(data_venda)",
+                      "expression": "DATE_TRUNC(\"MONTH\", `data_venda`)"
+                    },
+                    {
+                      "name": "sum(faturamento)",
+                      "expression": "SUM(`faturamento`)"
+                    },
+                    {
+                      "name": "canal",
+                      "expression": "`canal`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "monthly(data_venda)",
+                  "scale": {
+                    "type": "temporal"
+                  },
+                  "displayName": "Mês"
+                },
+                "y": {
+                  "fieldName": "sum(faturamento)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "Faturamento",
+                  "format": {
+                    "type": "number-currency",
+                    "currencyCode": "BRL",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 2
+                    }
+                  }
+                },
+                "color": {
+                  "fieldName": "canal",
+                  "scale": {
+                    "type": "categorical"
+                  },
+                  "displayName": "Canal"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Faturamento por Canal"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 17,
+            "width": 3,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "faturamento_tipo_produto",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "vendas",
+                  "fields": [
+                    {
+                      "name": "tipo_produto",
+                      "expression": "`tipo_produto`"
+                    },
+                    {
+                      "name": "sum(faturamento)",
+                      "expression": "SUM(`faturamento`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "sum(faturamento)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "Faturamento",
+                  "format": {
+                    "type": "number-currency",
+                    "currencyCode": "BRL",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 2
+                    }
+                  }
+                },
+                "y": {
+                  "fieldName": "tipo_produto",
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "x-reversed"
+                    }
+                  },
+                  "displayName": "Tipo de produto"
+                },
+                "label": {
+                  "show": true
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Genéricos x Referência x Similares"
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 17,
+            "width": 3,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "top_produtos",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "produtos",
+                  "fields": [
+                    {
+                      "name": "nome_produto",
+                      "expression": "`nome_produto`"
+                    },
+                    {
+                      "name": "laboratorio",
+                      "expression": "`laboratorio`"
+                    },
+                    {
+                      "name": "categoria",
+                      "expression": "`categoria`"
+                    },
+                    {
+                      "name": "sum(quantidade)",
+                      "expression": "SUM(`quantidade`)"
+                    },
+                    {
+                      "name": "sum(faturamento)",
+                      "expression": "SUM(`faturamento`)"
+                    },
+                    {
+                      "name": "sum(margem_bruta)",
+                      "expression": "SUM(`margem_bruta`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "nome_produto",
+                    "displayName": "Produto"
+                  },
+                  {
+                    "fieldName": "laboratorio",
+                    "displayName": "Laboratório"
+                  },
+                  {
+                    "fieldName": "categoria",
+                    "displayName": "Categoria"
+                  },
+                  {
+                    "fieldName": "sum(quantidade)",
+                    "displayName": "Unidades"
+                  },
+                  {
+                    "fieldName": "sum(faturamento)",
+                    "displayName": "Faturamento (R$)"
+                  },
+                  {
+                    "fieldName": "sum(margem_bruta)",
+                    "displayName": "Margem bruta (R$)"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Produtos Mais Vendidos"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 23,
+            "width": 6,
+            "height": 8
+          }
+        },
+        {
+          "widget": {
+            "name": "estoque_validade",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "estoque",
+                  "fields": [
+                    {
+                      "name": "situacao_validade",
+                      "expression": "`situacao_validade`"
+                    },
+                    {
+                      "name": "sum(valor_estoque)",
+                      "expression": "SUM(`valor_estoque`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "situacao_validade",
+                  "scale": {
+                    "type": "categorical"
+                  },
+                  "displayName": "Situação da validade"
+                },
+                "y": {
+                  "fieldName": "sum(valor_estoque)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "Valor em estoque",
+                  "format": {
+                    "type": "number-currency",
+                    "currencyCode": "BRL",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 2
+                    }
+                  }
+                },
+                "label": {
+                  "show": true
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Estoque Atual por Validade"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 31,
+            "width": 2,
+            "height": 7
+          }
+        },
+        {
+          "widget": {
+            "name": "lotes_a_vencer",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "lotes_criticos",
+                  "fields": [
+                    {
+                      "name": "nome_filial",
+                      "expression": "`nome_filial`"
+                    },
+                    {
+                      "name": "nome_produto",
+                      "expression": "`nome_produto`"
+                    },
+                    {
+                      "name": "lote",
+                      "expression": "`lote`"
+                    },
+                    {
+                      "name": "data_validade",
+                      "expression": "`data_validade`"
+                    },
+                    {
+                      "name": "dias_para_vencer",
+                      "expression": "`dias_para_vencer`"
+                    },
+                    {
+                      "name": "quantidade_disponivel",
+                      "expression": "`quantidade_disponivel`"
+                    },
+                    {
+                      "name": "valor_estoque",
+                      "expression": "`valor_estoque`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "nome_filial",
+                    "displayName": "Filial"
+                  },
+                  {
+                    "fieldName": "nome_produto",
+                    "displayName": "Produto"
+                  },
+                  {
+                    "fieldName": "lote",
+                    "displayName": "Lote"
+                  },
+                  {
+                    "fieldName": "data_validade",
+                    "displayName": "Validade"
+                  },
+                  {
+                    "fieldName": "dias_para_vencer",
+                    "displayName": "Dias para vencer"
+                  },
+                  {
+                    "fieldName": "quantidade_disponivel",
+                    "displayName": "Unidades"
+                  },
+                  {
+                    "fieldName": "valor_estoque",
+                    "displayName": "Valor (R$)"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Lotes Vencidos ou a Vencer em 60 Dias"
+              }
+            }
+          },
+          "position": {
+            "x": 2,
+            "y": 31,
+            "width": 4,
+            "height": 7
+          }
+        }
+      ]
+    }
+  ]
+}
