@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>ERP Farma — apresentação do projeto</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>
+/* Fonte da apresentação. Para gerar o PDF:
+   chrome --headless=new --no-pdf-header-footer --print-to-pdf=docs/apresentacao_erp_farma.pdf docs/apresentacao.html */
+@page { size: 1280px 720px; margin: 0; }
+:root {
+  --fundo: #f2f5f3; --superficie: #ffffff; --texto: #12221d; --suave: #55665f; --linha: #d6e0db;
+  --verde: #0b6b52; --verde-suave: #e0efe9; --escuro: #0c1512; --alerta: #a3341f; --alerta-suave: #fbeae6;
+  --titulo: "Bricolage Grotesque", "Segoe UI", sans-serif;
+  --corpo: "IBM Plex Sans", "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", Consolas, monospace;
+}
+* { box-sizing: border-box; margin: 0; }
+html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body { font: 400 19px/1.5 var(--corpo); color: var(--texto); background: var(--fundo); }
+.slide { width: 1280px; height: 720px; padding: 56px 64px 48px; display: flex; flex-direction: column; gap: 24px; position: relative; overflow: hidden; page-break-after: always; background: var(--fundo); }
+.slide:last-child { page-break-after: auto; }
+.sobre { font: 600 13px var(--corpo); letter-spacing: .1em; text-transform: uppercase; color: var(--verde); }
+h1 { font: 700 68px/1.02 var(--titulo); letter-spacing: -.02em; }
+h2 { font: 700 40px/1.1 var(--titulo); letter-spacing: -.015em; }
+h3 { font: 600 13px var(--corpo); letter-spacing: .08em; text-transform: uppercase; color: var(--suave); }
+p.lide { font-size: 22px; color: var(--suave); max-width: 46ch; }
+.rodape { position: absolute; left: 64px; right: 64px; bottom: 22px; display: flex; justify-content: space-between; font-size: 12px; color: var(--suave); }
+.corpo { flex: 1; display: grid; gap: 24px; min-height: 0; }
+.col-2 { grid-template-columns: 1fr 1fr; }
+.col-3 { grid-template-columns: repeat(3, 1fr); }
+.caixa { background: var(--superficie); border: 1px solid var(--linha); border-radius: 12px; padding: 20px 22px; display: flex; flex-direction: column; gap: 10px; }
+ul { padding-left: 20px; display: flex; flex-direction: column; gap: 7px; }
+li::marker { color: var(--verde); }
+strong { font-weight: 600; }
+code { font: 400 .85em var(--mono); background: var(--verde-suave); padding: 1px 6px; border-radius: 4px; }
+.num { font: 700 38px/1 var(--titulo); font-variant-numeric: tabular-nums; }
+.num small { font: 400 15px var(--corpo); color: var(--suave); display: block; margin-top: 6px; }
+.numeros { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.pequeno { font-size: 16px; color: var(--suave); }
+
+/* Capa */
+.capa { background: var(--escuro); color: #e6efeb; justify-content: center; gap: 22px; }
+.capa .sobre { color: #4fc39f; }
+.capa p.lide { color: #9bb0a8; }
+.capa .rodape { color: #9bb0a8; }
+.cruz { width: 54px; height: 54px; fill: #4fc39f; }
+
+/* Fluxo */
+.fluxo { display: flex; align-items: stretch; gap: 10px; }
+.etapa { flex: 1; background: var(--superficie); border: 1px solid var(--linha); border-radius: 10px; padding: 14px 14px; display: flex; flex-direction: column; gap: 4px; font-size: 15px; color: var(--suave); }
+.etapa b { font: 700 18px var(--titulo); color: var(--texto); }
+.etapa.destaque { background: var(--verde); border-color: var(--verde); color: #d8efe6; }
+.etapa.destaque b { color: #fff; }
+.seta { align-self: center; color: var(--verde); font-size: 22px; }
+
+table { width: 100%; border-collapse: collapse; font-size: 16px; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--linha); vertical-align: top; }
+th { font: 600 12px var(--corpo); letter-spacing: .06em; text-transform: uppercase; color: var(--suave); }
+tr:last-child td { border-bottom: 0; }
+.ok { color: var(--verde); font-weight: 600; white-space: nowrap; }
+.aj { color: var(--alerta); font-weight: 600; white-space: nowrap; }
+.captura { border: 1px solid var(--linha); border-radius: 12px; overflow: hidden; background: var(--superficie); align-self: start; }
+.captura img { display: block; width: 100%; }
+.aviso { background: var(--alerta-suave); border-color: #e3b8ae; }
+</style>
+</head>
+<body>
+
+<section class="slide capa">
+  <svg class="cruz" viewBox="0 0 22 22"><path d="M8 1h6v7h7v6h-7v7H8v-7H1V8h7z"/></svg>
+  <p class="sobre">Projeto ERP Farma · Databricks</p>
+  <h1>Do ERP da farmácia<br>à pergunta respondida</h1>
+  <p class="lide">Pipeline de dados, dashboard comercial e um assistente que responde perguntas de negócio em português.</p>
+  <div class="rodape"><span>Situação em 07/10/2026</span><span>github.com/Lucas-Sobreira/erp_farma</span></div>
+</section>
+
+<section class="slide">
+  <p class="sobre">O pedido</p>
+  <h2>Construir o que o diagrama do projeto descreve</h2>
+  <div class="fluxo">
+    <div class="etapa"><b>ERP</b>Sistema da farmácia</div><span class="seta">→</span>
+    <div class="etapa destaque"><b>Databricks Workflow</b>Landing → Bronze → Silver → Gold</div><span class="seta">→</span>
+    <div class="etapa"><b>Dashboard</b>Análise comercial</div><span class="seta">+</span>
+    <div class="etapa"><b>Chatbot</b>Perguntas em linguagem natural</div>
+  </div>
+  <div class="corpo col-2">
+    <div class="caixa">
+      <h3>Decisões tomadas no início</h3>
+      <ul>
+        <li><strong>Dados sintéticos</strong>: o cliente ainda não tem dados disponíveis.</li>
+        <li><strong>Databricks Free Edition</strong>: serverless, catálogo <code>erp_farma</code>.</li>
+        <li><strong>Dashboard nativo</strong> (AI/BI) sobre a camada Gold.</li>
+        <li><strong>Genie</strong> como chatbot, sobre as mesmas tabelas.</li>
+      </ul>
+    </div>
+    <div class="caixa">
+      <h3>O que existe hoje</h3>
+      <ul>
+        <li>Pipeline completo no ar, com carga inicial de 3 anos.</li>
+        <li>Dashboard publicado e aprovado.</li>
+        <li>Genie configurado e testado com perguntas de negócio.</li>
+        <li>Página web própria ligada ao Genie, com indicadores.</li>
+        <li>Código versionado no GitHub.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="rodape"><span>ERP Farma</span><span>2</span></div>
+</section>
+
+<section class="slide">
+  <p class="sobre">Dados de origem</p>
+  <h2>Um ERP de farmácia simulado, com defeitos de verdade</h2>
+  <div class="numeros">
+    <div class="caixa"><div class="num">351 mil<small>vendas em 3 anos</small></div></div>
+    <div class="caixa"><div class="num">808 mil<small>itens de venda</small></div></div>
+    <div class="caixa"><div class="num">703<small>produtos em 17 categorias</small></div></div>
+    <div class="caixa"><div class="num">8<small>filiais e 4 canais de venda</small></div></div>
+  </div>
+  <div class="corpo col-2">
+    <div class="caixa">
+      <h3>Parece um negócio real</h3>
+      <ul>
+        <li>Medicamentos de referência, genéricos e similares, com tarja e receita.</li>
+        <li>Sazonalidade: gripe e resfriado sobem no inverno.</li>
+        <li>Reajuste anual de preços em abril; e-commerce ganhando participação.</li>
+        <li>Controlados não são vendidos online.</li>
+      </ul>
+    </div>
+    <div class="caixa">
+      <h3>E chega sujo, como um ERP real</h3>
+      <ul>
+        <li>Duplicatas, campos vazios e datas em formato errado.</li>
+        <li>Itens sem venda correspondente.</li>
+        <li>Cadastros alterados depois da primeira carga.</li>
+      </ul>
+      <p class="pequeno">Tudo é fictício: laboratórios, clientes, CPFs e códigos de barras. O gerador é reprodutível e tem 10 testes automatizados.</p>
+    </div>
+  </div>
+  <div class="rodape"><span>ERP Farma</span><span>3</span></div>
+</section>
+
+<section class="slide">
+  <p class="sobre">Pipeline</p>
+  <h2>Quatro camadas, um workflow, um comando para publicar</h2>
+  <div class="fluxo">
+    <div class="etapa"><b>Landing</b>Arquivos como o ERP exporta (CSV e JSON)</div><span class="seta">→</span>
+    <div class="etapa"><b>Bronze</b>Cópia fiel, sem regra de negócio</div><span class="seta">→</span>
+    <div class="etapa"><b>Silver</b>Tipada, validada, sem duplicatas e sem dados pessoais</div><span class="seta">→</span>
+    <div class="etapa destaque"><b>Gold</b>Modelo estrela: 5 dimensões, 3 fatos e agregados</div>
+  </div>
+  <div class="corpo col-2">
+    <div class="caixa">
+      <h3>Como roda</h3>
+      <ul>
+        <li>Job com 3 tarefas: gerar dados, processar camadas, atualizar dashboard.</li>
+        <li>Carga inicial completa em cerca de 6 minutos.</li>
+        <li>Nome, e-mail e telefone de clientes não passam da Bronze; o CPF vira um código irreversível.</li>
+        <li>Tudo é publicado por <code>databricks bundle deploy</code>.</li>
+      </ul>
+    </div>
+    <div class="caixa">
+      <h3>Conferência após a carga</h3>
+      <table>
+        <tr><td>Faturamento Gold x Silver</td><td class="ok">R$ 32,39 mi, diferença zero</td></tr>
+        <tr><td>Vendas: Bronze → Silver</td><td>351.137 → 349.236</td></tr>
+        <tr><td>Chaves duplicadas na Silver</td><td class="ok">nenhuma</td></tr>
+        <tr><td>Chaves órfãs nos fatos</td><td class="ok">nenhuma</td></tr>
+      </table>
+      <p class="pequeno">A diferença entre Bronze e Silver são as duplicatas e os registros reprovados nas regras de qualidade.</p>
+    </div>
+  </div>
+  <div class="rodape"><span>ERP Farma</span><span>4</span></div>
+</section>
+
+<section class="slide">
+  <p class="sobre">Entrega 1 · Dashboard</p>
+  <h2>Análise Comercial, direto sobre a camada Gold</h2>
+  <div class="corpo col-3">
+    <div class="caixa">
+      <h3>Visão geral</h3>
+      <ul>
+        <li>Faturamento total</li>
+        <li>Produtos vendidos</li>
+        <li>Ticket médio</li>
+        <li>Evolução mensal do faturamento</li>
+        <li>Quantidade vendida por mês</li>
+      </ul>
+    </div>
+    <div class="caixa">
+      <h3>Recortes comerciais</h3>
+      <ul>
+        <li>Vendas por categoria</li>
+        <li>Formas de pagamento</li>
+        <li>Faturamento por canal</li>
+        <li>Genéricos x referência x similares</li>
+        <li>Produtos mais vendidos</li>
+      </ul>
+    </div>
+    <div class="caixa">
+      <h3>Específico de farmácia</h3>
+      <ul>
+        <li>Estoque atual por situação de validade</li>
+        <li>Lotes vencidos ou a vencer em 60 dias</li>
+      </ul>
+      <h3 style="margin-top:10px">Filtros</h3>
+      <ul>
+        <li>Período, canal de vendas e filial</li>
+      </ul>
+    </div>
+  </div>
+  <p class="pequeno">15 visuais em uma página, atualizados automaticamente ao fim de cada carga. Publicado no workspace como "Farma - Análise Comercial" e aprovado na revisão.</p>
+  <div class="rodape"><span>ERP Farma</span><span>5</span></div>
+</section>
+
+<section class="slide">
+  <p class="sobre">Entrega 2 · Chatbot</p>
+  <h2>O Genie respondeu bem; onde errou, uma regra corrigiu</h2>
+  <div class="corpo" style="grid-template-columns: 1.5fr 1fr">
+    <div class="caixa">
+      <h3>Teste com 7 perguntas de negócio</h3>
+      <table>
+        <tr><td>Faturamento por canal no último trimestre</td><td class="ok">Correto</td></tr>
+        <tr><td>Ticket médio por filial no mês passado</td><td class="ok">Correto</td></tr>
+        <tr><td>Categorias que vendem mais no inverno</td><td class="ok">Correto</td></tr>
+        <tr><td>Valor de estoque vencido por filial</td><td class="ok">Correto</td></tr>
+        <tr><td>Nome e CPF dos maiores clientes</td><td class="ok">Recusou</td></tr>
+        <tr><td>Forma de pagamento que mais cresceu</td><td class="aj">Corrigido</td></tr>
+        <tr><td>Faturamento de clientes fidelidade</td><td class="aj">Corrigido</td></tr>
+      </table>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div class="caixa">
+        <h3>Como se corrige</h3>
+        <p>As duas respostas fracas foram resolvidas acrescentando regras de negócio às instruções: o que significa "crescimento" e como tratar vendas sem cliente identificado.</p>
+      </div>
+      <div class="caixa aviso">
+        <h3>Ponto de atenção</h3>
+        <p>O serviço do Genie falhou de forma passageira em 2 de 17 perguntas. A mesma pergunta funcionou na tentativa seguinte.</p>
+      </div>
+    </div>
+  </div>
+  <div class="rodape"><span>ERP Farma</span><span>6</span></div>
+</section>
+
+<section class="slide">
+  <p class="sobre">Entrega 3 · Página web</p>
+  <h2>O assistente fora do Databricks</h2>
+  <div class="corpo" style="grid-template-columns: 1.25fr 1fr; align-items: start">
+    <div class="captura"><img src="img/pagina_assistente.png" alt="Tela inicial da página do assistente, com indicadores e perguntas sugeridas"></div>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="caixa">
+        <h3>O que a página faz</h3>
+        <ul>
+          <li>Pergunta em português, resposta com texto, tabela e a consulta usada.</li>
+          <li>Tabela ordenável e perguntas de continuação.</li>
+          <li>Indicadores no topo, recalculados só quando há carga nova.</li>
+          <li>Tema claro e escuro; funciona no celular.</li>
+        </ul>
+      </div>
+      <div class="caixa">
+        <h3>Como se liga ao Genie</h3>
+        <p class="pequeno">O navegador fala com um servidor intermediário, e só ele chama a API do Genie. Nenhuma credencial do Databricks vai para a página.</p>
+      </div>
+    </div>
+  </div>
+  <div class="rodape"><span>ERP Farma</span><span>7</span></div>
+</section>
+
+<section class="slide">
+  <p class="sobre">Situação e próximos passos</p>
+  <h2>O que está pronto e o que falta para ir a produção</h2>
+  <div class="corpo col-2">
+    <div class="caixa">
+      <h3>Pronto e verificado</h3>
+      <ul>
+        <li>Gerador de dados, com testes automatizados.</li>
+        <li>Pipeline Landing → Gold, com conferências aprovadas.</li>
+        <li>Dashboard Análise Comercial.</li>
+        <li>Genie space, criado a partir de arquivos versionados.</li>
+        <li>Página web com indicadores e conversa.</li>
+      </ul>
+      <h3 style="margin-top:8px">Ainda não testado</h3>
+      <ul>
+        <li>Carga diária incremental (o agendamento das 6h está pausado).</li>
+      </ul>
+    </div>
+    <div class="caixa aviso">
+      <h3>Antes de colocar no site da farmácia</h3>
+      <ul>
+        <li><strong>Dados reais</strong>: trocar o gerador pela extração do ERP do cliente.</li>
+        <li><strong>Hospedagem e login</strong>: hoje a página só roda na máquina local, porque mostra faturamento e margem sem autenticação.</li>
+        <li><strong>Identidade de serviço</strong>: hoje a página usa a credencial pessoal de quem a executa.</li>
+        <li><strong>Workspace pago</strong>: a Free Edition é voltada a aprendizado e tem cotas diárias.</li>
+        <li><strong>Público</strong>: definir se o assistente é para a equipe interna ou para clientes; são dados diferentes.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="rodape"><span>ERP Farma</span><span>8</span></div>
+</section>
+
+</body>
+</html>
