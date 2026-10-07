@@ -1,0 +1,24 @@
+[project]
+name = "erp-farma"
+version = "0.1.0"
+description = "Pipeline medalhão no Databricks para um ERP de farmácia, com dados sintéticos"
+requires-python = ">=3.11"
+dependencies = []
+
+[dependency-groups]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src/gerador"]
+
+[tool.ruff]
+line-length = 120
+extend-exclude = [".claude"]
+# `spark` é injetado pelo runtime nos arquivos-fonte do pipeline declarativo.
+builtins = ["spark"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+# As tabelas de referência e os registros do gerador ficam mais legíveis em linhas longas.
+ignore = ["E501"]

@@ -1,0 +1,12 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# Databricks
+.databricks/
+
+# Saída local do gerador de dados
+_landing/
