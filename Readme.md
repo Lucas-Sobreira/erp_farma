@@ -53,15 +53,27 @@ Depois da primeira carga:
 - abra o dashboard **Farma - Análise Comercial**;
 - crie o Genie space seguindo `genie/instrucoes.md`.
 
-## Página do assistente (Genie no HTML)
+## Página do assistente (Genie no site)
 
-`web/index.html` é uma página simples de perguntas e respostas ligada ao Genie space. O navegador fala só com `web/servidor.py`, que usa a credencial do Databricks CLI para chamar a Genie Conversation API; nenhum token vai para a página.
+`web/app` é um app React + TypeScript (Vite) de perguntas e respostas ligado ao Genie space. O navegador fala só com `web/servidor.py`, que usa a credencial do Databricks CLI para chamar a Genie Conversation API; nenhum token vai para a página.
+
+Na primeira vez, e sempre que o código de `web/app` mudar, gere a página (requer Node 20+):
+
+```bash
+npm --prefix web/app install
+```
+
+```bash
+npm --prefix web/app run build
+```
+
+Depois suba o servidor e abra http://localhost:8000:
 
 ```bash
 uv run --group web python web/servidor.py
 ```
 
-Depois abra http://localhost:8000. O servidor só aceita conexões da própria máquina, porque a página mostra dados comerciais sem login.
+O servidor só aceita conexões da própria máquina, porque a página mostra dados comerciais sem login.
 
 ## Desenvolvimento local
 

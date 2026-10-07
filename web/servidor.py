@@ -3,7 +3,11 @@
 O navegador nunca fala com o Databricks. Ele chama este servidor, que usa a
 credencial do Databricks CLI (perfil OAuth) para chamar a Genie Conversation API.
 
+A página é um app React em web/app; este servidor entrega o build (web/dist).
+
 Uso (na raiz do repositório):
+  npm --prefix web/app install        (só na primeira vez)
+  npm --prefix web/app run build
   uv run --group web python web/servidor.py
   -> http://localhost:8000
 
@@ -14,6 +18,7 @@ Variáveis de ambiente opcionais:
 """
 
 import json
+import mimetypes
 import os
 import re
 import socket
@@ -21,12 +26,13 @@ import threading
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qs, unquote, urlparse
 
 from databricks.sdk import WorkspaceClient
 from databricks.sdk.errors import DatabricksError
 
 PASTA = Path(__file__).parent
+DIST = (PASTA / "dist").resolve()
 PERFIL = os.environ.get("DATABRICKS_CONFIG_PROFILE", "ai_lab")
 SPACE_ID = os.environ.get("GENIE_SPACE_ID", "01f1c2742b961019bc2d55b20a284e1a")
 PORTA = int(os.environ.get("PORT", "8000"))
@@ -108,15 +114,32 @@ def _validar_id(valor: str) -> None:
 class Manipulador(BaseHTTPRequestHandler):
     def do_GET(self):
         url = urlparse(self.path)
-        if url.path == "/":
-            self._enviar(HTTPStatus.OK, (PASTA / "index.html").read_bytes(), "text/html; charset=utf-8")
-        elif url.path == "/api/sugestoes":
+        if url.path == "/api/sugestoes":
             self._json(lambda: {"perguntas": perguntas_sugeridas()})
         elif url.path == "/api/resposta":
             q = parse_qs(url.query)
             self._json(lambda: resposta(q.get("conversa_id", [""])[0], q.get("mensagem_id", [""])[0]))
-        else:
+        elif url.path.startswith("/api/"):
             self._enviar_json(HTTPStatus.NOT_FOUND, {"erro": "Não encontrado."})
+        else:
+            self._arquivo(url.path)
+
+    def _arquivo(self, caminho: str):
+        """Entrega um arquivo do build do app React, sem sair da pasta web/dist."""
+        if not (DIST / "index.html").is_file():
+            aviso = (
+                "A página ainda não foi gerada. Rode: npm --prefix web/app install && npm --prefix web/app run build"
+            )
+            self._enviar(HTTPStatus.SERVICE_UNAVAILABLE, aviso.encode("utf-8"), "text/plain; charset=utf-8")
+            return
+        arquivo = (DIST / unquote(caminho).lstrip("/")).resolve() if caminho != "/" else DIST / "index.html"
+        if not arquivo.is_relative_to(DIST) or not arquivo.is_file():
+            self._enviar(HTTPStatus.NOT_FOUND, "Não encontrado.".encode(), "text/plain; charset=utf-8")
+            return
+        tipo = mimetypes.guess_type(arquivo.name)[0] or "application/octet-stream"
+        if tipo.startswith("text/") or tipo.endswith(("javascript", "json")):
+            tipo += "; charset=utf-8"
+        self._enviar(HTTPStatus.OK, arquivo.read_bytes(), tipo)
 
     def do_POST(self):
         if urlparse(self.path).path != "/api/perguntar":

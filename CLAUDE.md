@@ -18,7 +18,9 @@ uv run pytest tests/test_gerador.py::test_reajuste_anual_de_precos   # single te
 uv run ruff check . && uv run ruff format .     # lint + format
 uv run python src/gerador/main.py --modo backfill --destino _landing --anos-historico 1   # generate files locally
 
-uv run --group web python web/servidor.py        # assistant web page at http://localhost:8000
+npm --prefix web/app run build                   # type-check + build the React page into web/dist (npm install first)
+uv run --group web python web/servidor.py        # serve web/dist + Genie proxy at http://localhost:8000
+npm --prefix web/app run dev                     # Vite dev server with hot reload; proxies /api to :8000
 
 databricks bundle validate
 databricks bundle deploy                                      # target dev is the default
@@ -56,7 +58,11 @@ Everything is deployed by one Databricks Asset Bundle (`databricks.yml` + `resou
 
 **Chatbot** — a Genie space over the Gold `dim_*`/`fato_*` tables (not `agg_*`). It is not deployed by the bundle; `genie/` holds its instructions, joins, sample questions and reference SQL as the source of truth, and `genie/montar_space.py` turns them into the API payload.
 
-**Web page (`web/`)** — `index.html` (single file, no build step, no JS dependencies) plus `servidor.py`, a standard-library HTTP server that proxies the Genie Conversation API through `databricks-sdk` using the CLI profile (`DATABRICKS_CONFIG_PROFILE`, default `ai_lab`; `GENIE_SPACE_ID` overrides the space). The browser never sees a Databricks token. Flow: `POST /api/perguntar` starts a conversation or adds a follow-up message and returns ids; the page polls `GET /api/resposta` until the message reaches a final state, then renders text, result table, SQL and follow-up suggestions. The page builds DOM nodes with `textContent` only — never inject Genie output as HTML. The server binds to loopback only (both `127.0.0.1` and `::1`) because the page has no login; do not bind it to a public interface without adding authentication. `web/` is excluded from bundle sync and has its own dependency group (`web`).
+**Web page (`web/`)** — two parts:
+- `web/servidor.py` — standard-library HTTP server that serves the built page from `web/dist` (git-ignored) and proxies the Genie Conversation API through `databricks-sdk` using the CLI profile (`DATABRICKS_CONFIG_PROFILE`, default `ai_lab`; `GENIE_SPACE_ID` overrides the space). The browser never sees a Databricks token. `POST /api/perguntar` starts a conversation or adds a follow-up and returns ids; `GET /api/resposta` is polled until the message reaches a final state; `GET /api/sugestoes` returns the ★ questions from `genie/perguntas_exemplo.md`. It binds to loopback only (`127.0.0.1` and `::1`) because the page has no login; do not bind it to a public interface without adding authentication.
+- `web/app` — React 18 + TypeScript + Vite, no UI or state library. It follows the project skill `.claude/skills/frontend-patterns`: conversation state lives in a `useReducer` inside the `useConversa` hook (ask, poll, one automatic retry on Genie `FAILED`, abort on "Nova conversa"); `Abas` is a compound component (context + roving tabindex); `Turno`, `TabelaResultado` and `TextoGenie` are memoized; `LimiteDeErro` is the error boundary. `api.ts` is the typed contract with the server — change both sides together. Genie text is parsed into React elements in `TextoGenie`; never use `dangerouslySetInnerHTML` for model output. All colors are CSS tokens in `estilos.css` with a light and a dark set switched by `data-tema` on `<html>`. Identifiers, component names and UI copy are in Portuguese, like the rest of the repo.
+
+`web/` is excluded from bundle sync; the Python side has its own dependency group (`web`).
 
 ## Status
 

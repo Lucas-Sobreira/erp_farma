@@ -13,7 +13,7 @@ As marcadas com ★ aparecem como sugestão na tela inicial do Genie space. As n
 ## Outras perguntas úteis
 
 - ★ Como o faturamento deste ano se compara ao do ano passado, mês a mês?
-- Qual forma de pagamento mais cresceu nos últimos 12 meses?
+- ★ Qual forma de pagamento mais cresceu nos últimos 12 meses?
 - Quais categorias vendem mais no inverno?
 - Qual laboratório tem a maior margem bruta?
 - Quanto do faturamento vem de clientes do programa de fidelidade?

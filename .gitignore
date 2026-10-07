@@ -10,3 +10,6 @@ __pycache__/
 
 # Saída local do gerador de dados
 _landing/
+
+# Build da página web
+web/dist/
