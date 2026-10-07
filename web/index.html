@@ -235,6 +235,24 @@ async function chamar(url, opcoes) {
   return dados;
 }
 
+async function perguntarEAguardar(pergunta, rotulo) {
+  const inicioMs = Date.now();
+  const ids = await chamar("/api/perguntar", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ pergunta, conversa_id: conversaId }),
+  });
+  conversaId = ids.conversa_id;
+  const consulta = `/api/resposta?conversa_id=${ids.conversa_id}&mensagem_id=${ids.mensagem_id}`;
+  while (true) {
+    await new Promise((ok) => setTimeout(ok, 1500));
+    const r = await chamar(consulta);
+    if (r.pronto) return r;
+    rotulo.textContent = ANDAMENTO[r.estado] || "Processando";
+    if (Date.now() - inicioMs > 180000) throw new Error("A resposta demorou demais. Tente de novo em instantes.");
+  }
+}
+
 async function enviar(pergunta) {
   pergunta = pergunta.trim();
   if (!pergunta || botao.disabled) return;
@@ -251,21 +269,13 @@ async function enviar(pergunta) {
   bloco.scrollIntoView({ behavior: "smooth", block: "nearest" });
 
   try {
-    const inicioMs = Date.now();
-    const ids = await chamar("/api/perguntar", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ pergunta, conversa_id: conversaId }),
-    });
-    conversaId = ids.conversa_id;
-    const consulta = `/api/resposta?conversa_id=${ids.conversa_id}&mensagem_id=${ids.mensagem_id}`;
-    while (true) {
-      await new Promise((ok) => setTimeout(ok, 1500));
-      const r = await chamar(consulta);
-      if (r.pronto) { mostrarResposta(bloco, r); break; }
-      rotulo.textContent = ANDAMENTO[r.estado] || "Processando";
-      if (Date.now() - inicioMs > 180000) throw new Error("A resposta demorou demais. Tente de novo em instantes.");
+    // O serviço de IA do Genie às vezes falha de forma passageira: uma nova tentativa costuma resolver.
+    let r = await perguntarEAguardar(pergunta, rotulo);
+    if (r.estado === "FAILED") {
+      rotulo.textContent = "Tentando de novo";
+      r = await perguntarEAguardar(pergunta, rotulo);
     }
+    mostrarResposta(bloco, r);
   } catch (erro) {
     bloco.classList.add("erro");
     bloco.replaceChildren(el("p", null, erro.message));

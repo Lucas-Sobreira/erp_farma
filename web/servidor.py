@@ -73,7 +73,9 @@ def resposta(conversa_id: str, mensagem_id: str) -> dict:
 
     saida = {"estado": estado, "pronto": True, "texto": None, "sql": None, "tabela": None, "sugestoes": []}
     if estado != "COMPLETED":
-        saida["texto"] = (mensagem.get("error") or {}).get("error") or "Não foi possível responder a esta pergunta."
+        # O erro técnico fica no log; falhas do serviço de IA do Genie costumam ser passageiras.
+        print(f"Genie {estado} na mensagem {mensagem_id}: {mensagem.get('error')}", flush=True)
+        saida["texto"] = "O assistente não conseguiu responder agora. Tente perguntar de novo."
         return saida
 
     for anexo in mensagem.get("attachments") or []:
